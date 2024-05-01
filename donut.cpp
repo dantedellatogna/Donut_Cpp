@@ -3,34 +3,39 @@
 #include <stdio.h>
 #include <unistd.h>
 
-
 void gotoxy(int x, int y);
 
 int main()
 {
-    // double theta{};
-    // double phi{};
+    double theta{};
+    double phi{};
 
-    double R{20};
-    double r{5};
+    double R{30};
+    double r{15};
 
     double x{}, y{}, z{};
 
-    for (int i{0}; i <= 180; i++)
+    while (true)
     {
-        for (int j{0}; j <= 180; j++)
+        for (theta = 0; theta < 180; theta++)
         {
-            x = cos(i) * (R + r * cos(j));
-            y = sin(i) * (R + r * cos(j));
-            z = r * sin(j);
+            for (phi = 0; phi < 180; phi++)
+            {
+                x = cos(theta) * (R + r * cos(phi));
+                y = sin(theta) * (R + r * cos(phi));
+                z = r * sin(phi);
 
-            gotoxy((x + 50)/2, (y + 50) / 4);
-            std::cout << "#" << std::endl;
+                gotoxy((x + 100) / 2, (y + 50) / 4);
+
+                std::cout << "*";
+
+                // usleep(300);
+            }
         }
-
+        // std::cout << "\033[2J";
     }
 
-    gotoxy(0, 100);
+    gotoxy(0, 300);
     return 0;
 }
 
