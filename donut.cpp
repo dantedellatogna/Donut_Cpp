@@ -10,18 +10,19 @@ void clear_screen();
 
 void gotoxy(int x, int y);
 
+
 int main()
 {
     double theta{};
     double phi{};
 
     double R{30};
-    double r{10};
+    double r{15};
 
     double x{}, y{}, z{};
     std::vector<double> a{0, 0, 0};  // 3D Object
     std::vector<double> c{0, 0, 0};  // Camera
-    std::vector<double> e{0, 0, 20}; // Plane
+    std::vector<double> e{0, 0, 100}; // Plane
     std::vector<double> d(3);        // Camera transformation
     std::vector<double> b(2);        // Projection on 2D plane
 
@@ -56,7 +57,7 @@ int main()
                 // projection
                 a[0] = y_rotation_transform[0];
                 a[1] = y;
-                a[2] = y_rotation_transform[2] + 45;
+                a[2] = y_rotation_transform[2] + 100;
                 /*
                 a[0] = x;
                 a[1] = y;
@@ -73,7 +74,7 @@ int main()
                 // std::cout<<a[0]<<std::endl;
 
                 // gotoxy((x + 100) / 2, (y + 50) / 4);
-                gotoxy((b[0] + 100) / 2, (b[1] + 50) / 4);
+                gotoxy((b[0] + 100) / 2, (b[1] + 70) / 4);
 
                 dot_al = a[0] * light[0] + a[1] * light[1] + a[2] * light[2];
                 a_mag = sqrt((pow(a[0], 2) + pow(a[1], 2) + pow(a[2], 2)));
