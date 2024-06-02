@@ -9,7 +9,7 @@
 void clear_screen();
 
 void gotoxy(int x, int y);
-
+void light_system(std::vector<double> a, std::vector<double> light, double light_angle);
 
 int main()
 {
@@ -22,19 +22,13 @@ int main()
     double x{}, y{}, z{};
     std::vector<double> a{0, 0, 0};  // 3D Object
     std::vector<double> c{0, 0, 0};  // Camera
-    std::vector<double> e{0, 0, 100}; // Plane
+    std::vector<double> e{0, 0, 65}; // Plane
     std::vector<double> d(3);        // Camera transformation
     std::vector<double> b(2);        // Projection on 2D plane
 
     double light_angle{45};
-    std::vector<double> light{cos(light_angle), -sin(light_angle), sin(light_angle)};
+    std::vector<double> light{cos(light_angle), -sin(light_angle), 1};
     // std::vector<double> light{1, 0, 1};
-
-    double dot_al{}; // Dot product of 3D Object and Light vectors
-    double a_mag{};  // 3D Object vector magnitude
-    double l_mag{};  // Ligth vector magnitude
-
-    double angle_between{};
 
     std::vector<double> y_rotation_transform{0, 0, 0};
 
@@ -57,7 +51,7 @@ int main()
                 // projection
                 a[0] = y_rotation_transform[0];
                 a[1] = y;
-                a[2] = y_rotation_transform[2] + 100;
+                a[2] = y_rotation_transform[2] + 70;
                 /*
                 a[0] = x;
                 a[1] = y;
@@ -76,33 +70,16 @@ int main()
                 // gotoxy((x + 100) / 2, (y + 50) / 4);
                 gotoxy((b[0] + 100) / 2, (b[1] + 70) / 4);
 
-                dot_al = a[0] * light[0] + a[1] * light[1] + a[2] * light[2];
-                a_mag = sqrt((pow(a[0], 2) + pow(a[1], 2) + pow(a[2], 2)));
-                l_mag = sqrt((pow(light[0], 2) + pow(light[1], 2) + pow(light[2], 2)));
-
-                angle_between = acos(dot_al / (a_mag * l_mag)); // returns radians. Need to transform it to degrees.
-                angle_between = angle_between * 180 / M_PI;
-                // std::cout <<angle_between<<std::endl;
-
-                if (angle_between >= 90)
-                    std::cout << ".";
-                else if (angle_between >= 70)
-                    std::cout << ",";
-                else if (angle_between >= 50)
-                    std::cout << ";";
-                else if (angle_between >= 30)
-                    std::cout << "#";
-                else if (angle_between < 30)
-                    std::cout << "@";
-
+                // Light System
+                light_system(a, light, light_angle);
                 // usleep(300);
             }
         }
         // std::cout << "\033[2J";
-        // light_angle += 0.1;
+        // light_angle += 0.5;
         // light[0] = cos(light_angle);
         // light[1] = -sin(light_angle);
-        // light[2] += cos(light_angle);
+        // light[2] = sin(light_angle);
 
         if (rotation_angle[1] == 360)
             rotation_angle[1] = 0;
@@ -127,4 +104,33 @@ void clear_screen()
 void gotoxy(int x, int y)
 {
     printf("%c[%d;%df", 0x1B, y, x);
+}
+
+void light_system(std::vector<double> a, std::vector<double> light, double light_angle)
+{
+
+    double dot_al{}; // Dot product of 3D Object and Light vectors
+    double a_mag{};  // 3D Object vector magnitude
+    double l_mag{};  // Ligth vector magnitude
+
+    double angle_between{};
+
+    dot_al = a[0] * light[0] + a[1] * light[1] + a[2] * light[2];
+    a_mag = sqrt((pow(a[0], 2) + pow(a[1], 2) + pow(a[2], 2)));
+    l_mag = sqrt((pow(light[0], 2) + pow(light[1], 2) + pow(light[2], 2)));
+
+    angle_between = acos(dot_al / (a_mag * l_mag)); // returns radians. Need to transform it to degrees.
+    angle_between = angle_between * 180 / M_PI;
+    // std::cout <<angle_between<<std::endl;
+
+    if (angle_between >= 70)
+        std::cout << ".";
+    else if (angle_between >= 50)
+        std::cout << ",";
+    else if (angle_between >= 30)
+        std::cout << "~";
+    else if (angle_between >= 10)
+        std::cout << "#";
+    else if (angle_between < 10)
+        std::cout << "@";
 }
