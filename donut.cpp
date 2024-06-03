@@ -10,6 +10,7 @@ void clear_screen();
 
 void gotoxy(int x, int y);
 void light_system(std::vector<double> a, std::vector<double> light, double light_angle);
+void light_system2(std::vector<double> a, std::vector<double> light, double light_angle);
 
 int main()
 {
@@ -27,7 +28,7 @@ int main()
     std::vector<double> b(2);        // Projection on 2D plane
 
     double light_angle{45};
-    std::vector<double> light{cos(light_angle), -sin(light_angle), 1};
+    std::vector<double> light{0, -1, 1};
     // std::vector<double> light{1, 0, 1};
 
     std::vector<double> y_rotation_transform{0, 0, 0};
@@ -71,7 +72,8 @@ int main()
                 gotoxy((b[0] + 100) / 2, (b[1] + 70) / 4);
 
                 // Light System
-                light_system(a, light, light_angle);
+                //light_system(a, light, light_angle);
+                light_system2(a, light, light_angle);
                 // usleep(300);
             }
         }
@@ -133,4 +135,19 @@ void light_system(std::vector<double> a, std::vector<double> light, double light
         std::cout << "#";
     else if (angle_between < 10)
         std::cout << "@";
+}
+
+void light_system2(std::vector<double> a, std::vector<double> light, double light_angle)
+{
+
+    double dot_al{}; // Dot product of 3D Object and Light vectors
+    dot_al = a[0] * light[0] + a[1] * light[1] + a[2] * light[2];
+
+    if (dot_al >= 100)
+        std::cout << "$";
+    else if (dot_al < 100)
+        std::cout << ".";
+    
+    //std::cout << dot_al << std::endl;
+    //usleep(3000);
 }
