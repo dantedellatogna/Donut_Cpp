@@ -11,6 +11,7 @@ void clear_screen();
 void gotoxy(int x, int y);
 void light_system(std::vector<float> normal, std::vector<float> light);
 std::vector<float> normal_surface(float costheta, float sintheta, float cosphi, float sinphi);
+// void draw(std::vector<std::vector<int>> z_buffer, std::vector<);
 
 int main()
 {
@@ -34,10 +35,10 @@ int main()
 
     std::vector<float> normal(3); // Normal vector for each point in the surface
 
-    std::vector<float> light{1, -1, 1};
+    std::vector<float> light{0, -1, 1};
     // std::vector<double> light{1, 0, 1};
 
-    std::vector<float> origin{0, 0, 60};
+    std::vector<float> origin{0, 0, 80};
     std::vector<float> x_rotation_transform(3);
     std::vector<float> y_rotation_transform(3);
     std::vector<float> z_rotation_transform(3);
@@ -47,6 +48,13 @@ int main()
     float sinrotation{};
 
     float tau = 2 * M_PI;
+
+    // z-buffer
+    std::vector<std::vector<float>> z_buffer(90, std::vector<float>(90, NULL));
+
+    int z_aux0{};
+    int z_aux1{};
+    float z_aux2{};
 
     while (true)
     {
@@ -76,28 +84,19 @@ int main()
                 a[1] = y;
                 a[2] = y_rotation_transform[2] + origin[2];
 
-                /*
-                // rotation x_axis
-                x_rotation_transform[0] = x;
-                x_rotation_transform[1] = y * cosrotation - z * sinrotation;
-                x_rotation_transform[2] = z * cosrotation + y * sinrotation;
+                z_aux2 = a[2];
+                z_aux0 = (int)a[0] + 44;
+                z_aux1 = (int)a[1] + 44;
+                gotoxy(0, 3);
+                // std::cout << a[2] << "\n";
 
-                // rotation y-axis
-                y_rotation_transform[0] = x_rotation_transform[0] * cosrotation - x_rotation_transform[2] * sinrotation;
-                y_rotation_transform[1] = x_rotation_transform[1];
-                y_rotation_transform[2] = x_rotation_transform[2] * cosrotation + x_rotation_transform[0] * sinrotation;
-
-                // rotation z-axis
-                z_rotation_transform[0] = y_rotation_transform[0] * cosrotation - y_rotation_transform[1] * sinrotation;
-                z_rotation_transform[1] = y_rotation_transform[1] * cosrotation + y_rotation_transform[0] * sinrotation;
-                z_rotation_transform[2] = y_rotation_transform[2];
-
-                // projection
-                a[0] = z_rotation_transform[0] + origin[0];
-                a[1] = z_rotation_transform[1] + origin[1];
-                a[2] = z_rotation_transform[2] + origin[2];
-                                */
+                /*if (z_buffer[z_aux0][z_aux1] == NULL || z_aux2 < z_buffer[z_aux0][z_aux1])
+                {
+                    // std::cout << z_buffer[z_aux0][z_aux1];
+                    z_buffer[z_aux0][z_aux1] = z_aux2;
+                }*/
                 // Calculate normal vector
+
                 normal = normal_surface(costheta, sintheta, cosphi, sinphi);
 
                 d[0] = a[0] - c[0];
@@ -107,22 +106,18 @@ int main()
                 b[0] = (e[2] / d[2]) * d[0] - e[0];
                 b[1] = (e[2] / d[2]) * d[1] - e[1];
 
-                gotoxy((b[0] + 100), (b[1] + 50) / 2);
+                gotoxy((b[0] + 30), (b[1] + 30) / 2);
 
                 // Light System
-                light_system(normal, light);
-                // usleep(500000);
 
-                // gotoxy(0, 8);
-                // std::cout << "Normal X: " << normal[0] << " Normal Y: " << normal[1] << " Normal Z: " << normal[2] << std::endl;
-                // std::cout << "Light X: " << light[0] << " Light Y: " << light[1] << " Light Z: " << light[2];
+                light_system(normal, light);
             }
         }
 
         if (rotation_angle >= tau)
             rotation_angle -= tau;
         rotation_angle += 0.05;
-        gotoxy(0, 10);
+        gotoxy(0, 0);
         std::cout << "Rotation angle: " << rotation_angle << std::endl;
         usleep(50000);
         // clear_screen();
@@ -168,8 +163,6 @@ void light_system(std::vector<float> normal, std::vector<float> light)
         std::cout << "#";
     else if (dot_product >= 1.2)
         std::cout << "@";
-    // std::cout << dot_product << std::endl;
-    // usleep(3000);
 }
 
 std::vector<float> normal_surface(float costheta, float sintheta, float cosphi, float sinphi)
@@ -196,13 +189,10 @@ std::vector<float> normal_surface(float costheta, float sintheta, float cosphi, 
 
     // Normalize normal vector
     length = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
-    // gotoxy(0, 0);
+
     normal[0] /= length;
     normal[1] /= length;
     normal[2] /= length;
-    // std::cout << normal[0] << std::endl;
-    // std::cout << normal[1] << std::endl;
-    // std::cout << normal[2] << std::endl;
 
     return normal;
 }
