@@ -6,63 +6,98 @@
 
 #include <cstdlib>
 
+double degrees_2_radians(float angle);
 void clear_screen();
-
 void gotoxy(int x, int y);
-
+void light_system(std::vector<float> normal, std::vector<float> light);
+std::vector<float> normal_surface(float costheta, float sintheta, float cosphi, float sinphi);
+// void draw(std::vector<std::vector<int>> z_buffer, std::vector<);
 
 int main()
 {
-    double theta{};
-    double phi{};
+    float theta{}; // Big circle
+    float costheta{};
+    float sintheta{};
 
-    double R{30};
-    double r{15};
+    float phi{}; // small circle
+    float cosphi{};
+    float sinphi{};
 
-    double x{}, y{}, z{};
-    std::vector<double> a{0, 0, 0};  // 3D Object
-    std::vector<double> c{0, 0, 0};  // Camera
-    std::vector<double> e{0, 0, 100}; // Plane
-    std::vector<double> d(3);        // Camera transformation
-    std::vector<double> b(2);        // Projection on 2D plane
+    float R{30};
+    float r{15};
 
-    double light_angle{45};
-    std::vector<double> light{cos(light_angle), -sin(light_angle), sin(light_angle)};
+    float x{}, y{}, z{};
+    std::vector<float> a{0, 0, 0};  // 3D Object
+    std::vector<float> c{0, 0, 0};  // Camera
+    std::vector<float> e{0, 0, 40}; // Plane
+    std::vector<float> d(3);        // Camera transformation
+    std::vector<float> b(2);        // Projection on 2D plane
+
+    std::vector<float> normal(3); // Normal vector for each point in the surface
+
+    std::vector<float> light{0, -1, 1};
     // std::vector<double> light{1, 0, 1};
 
-    double dot_al{}; // Dot product of 3D Object and Light vectors
-    double a_mag{};  // 3D Object vector magnitude
-    double l_mag{};  // Ligth vector magnitude
+    std::vector<float> origin{0, 0, 80};
+    std::vector<float> x_rotation_transform(3);
+    std::vector<float> y_rotation_transform(3);
+    std::vector<float> z_rotation_transform(3);
 
-    double angle_between{};
+    float rotation_angle{0}; // Rotation angle
+    float cosrotation{};
+    float sinrotation{};
 
-    std::vector<double> y_rotation_transform{0, 0, 0};
+    float tau = 2 * M_PI;
 
-    std::vector<double> rotation_angle{0, 0, 0}; // Rotation angle
+    // z-buffer
+    std::vector<std::vector<float>> z_buffer(90, std::vector<float>(90, NULL));
+
+    int z_aux0{};
+    int z_aux1{};
+    float z_aux2{};
 
     while (true)
     {
-        for (theta = 0; theta < 180; theta++)
+        clear_screen();
+        for (theta = 0; theta < tau; theta += 0.1)
         {
-            for (phi = 0; phi < 180; phi++)
+            costheta = cos(theta);
+            sintheta = sin(theta);
+
+            for (phi = 0; phi < tau; phi += 0.1)
             {
-                x = cos(theta) * (R + r * cos(phi));
-                y = sin(theta) * (R + r * cos(phi));
-                z = r * sin(phi);
+                cosphi = cos(phi);
+                sinphi = sin(phi);
 
-                // rotation x
-                y_rotation_transform[0] = x * cos(rotation_angle[1]) - z * sin(rotation_angle[1]);
-                y_rotation_transform[2] = x * sin(rotation_angle[1]) + z * cos(rotation_angle[1]);
+                x = costheta * (R + r * cosphi);
+                y = sintheta * (R + r * cosphi);
+                z = r * sinphi;
 
-                // projection
+                cosrotation = cos(rotation_angle);
+                sinrotation = sin(rotation_angle);
+
+                // test
+                y_rotation_transform[0] = x * cosrotation - z * sinrotation;
+                y_rotation_transform[2] = x * sinrotation + z * cosrotation;
+
                 a[0] = y_rotation_transform[0];
                 a[1] = y;
-                a[2] = y_rotation_transform[2] + 100;
-                /*
-                a[0] = x;
-                a[1] = y;
-                a[2] = z + 30;
-                */
+                a[2] = y_rotation_transform[2] + origin[2];
+
+                z_aux2 = a[2];
+                z_aux0 = (int)a[0] + 44;
+                z_aux1 = (int)a[1] + 44;
+                gotoxy(0, 3);
+                // std::cout << a[2] << "\n";
+
+                /*if (z_buffer[z_aux0][z_aux1] == NULL || z_aux2 < z_buffer[z_aux0][z_aux1])
+                {
+                    // std::cout << z_buffer[z_aux0][z_aux1];
+                    z_buffer[z_aux0][z_aux1] = z_aux2;
+                }*/
+                // Calculate normal vector
+
+                normal = normal_surface(costheta, sintheta, cosphi, sinphi);
 
                 d[0] = a[0] - c[0];
                 d[1] = a[1] - c[1];
@@ -71,43 +106,21 @@ int main()
                 b[0] = (e[2] / d[2]) * d[0] - e[0];
                 b[1] = (e[2] / d[2]) * d[1] - e[1];
 
-                // std::cout<<a[0]<<std::endl;
+                gotoxy((b[0] + 30), (b[1] + 30) / 2);
 
-                // gotoxy((x + 100) / 2, (y + 50) / 4);
-                gotoxy((b[0] + 100) / 2, (b[1] + 70) / 4);
+                // Light System
 
-                dot_al = a[0] * light[0] + a[1] * light[1] + a[2] * light[2];
-                a_mag = sqrt((pow(a[0], 2) + pow(a[1], 2) + pow(a[2], 2)));
-                l_mag = sqrt((pow(light[0], 2) + pow(light[1], 2) + pow(light[2], 2)));
-
-                angle_between = acos(dot_al / (a_mag * l_mag)); // returns radians. Need to transform it to degrees.
-                angle_between = angle_between * 180 / M_PI;
-                // std::cout <<angle_between<<std::endl;
-
-                if (angle_between >= 90)
-                    std::cout << ".";
-                else if (angle_between >= 70)
-                    std::cout << ",";
-                else if (angle_between >= 50)
-                    std::cout << ";";
-                else if (angle_between >= 30)
-                    std::cout << "#";
-                else if (angle_between < 30)
-                    std::cout << "@";
-
-                // usleep(300);
+                light_system(normal, light);
             }
         }
-        // std::cout << "\033[2J";
-        // light_angle += 0.1;
-        // light[0] = cos(light_angle);
-        // light[1] = -sin(light_angle);
-        // light[2] += cos(light_angle);
 
-        if (rotation_angle[1] == 360)
-            rotation_angle[1] = 0;
-        rotation_angle[1] += 0.1;
-        clear_screen();
+        if (rotation_angle >= tau)
+            rotation_angle -= tau;
+        rotation_angle += 0.05;
+        gotoxy(0, 0);
+        std::cout << "Rotation angle: " << rotation_angle << std::endl;
+        usleep(50000);
+        // clear_screen();
     }
 
     gotoxy(0, 300);
@@ -127,4 +140,59 @@ void clear_screen()
 void gotoxy(int x, int y)
 {
     printf("%c[%d;%df", 0x1B, y, x);
+}
+
+void light_system(std::vector<float> normal, std::vector<float> light)
+{
+    float dot_product{}; // Dot product of Normal surface and Light vectors
+    dot_product = normal[0] * light[0] + normal[1] * light[1] + normal[2] * light[2];
+
+    if (dot_product <= 0) //|| dot_product > 0)
+        std::cout << ".";
+    else if (dot_product < 0.2)
+        std::cout << "-";
+    else if (dot_product < 0.5)
+        std::cout << "~";
+    else if (dot_product < 0.7)
+        std::cout << ":";
+    else if (dot_product < 0.9)
+        std::cout << ";";
+    else if (dot_product < 1)
+        std::cout << "$";
+    else if (dot_product < 1.2)
+        std::cout << "#";
+    else if (dot_product >= 1.2)
+        std::cout << "@";
+}
+
+std::vector<float> normal_surface(float costheta, float sintheta, float cosphi, float sinphi)
+{
+    // theta -> Big circle; phi -> Small circle
+    std::vector<float> tangent_R(3); // Tangent vector with respect to big circle
+    std::vector<float> tangent_r(3); // Tangent vector with respectr to little circle
+    std::vector<float> normal(3);
+
+    float length{};
+
+    tangent_R[0] = (-1) * sintheta;
+    tangent_R[1] = costheta;
+    tangent_R[2] = 0;
+
+    tangent_r[0] = costheta * (-1) * sinphi;
+    tangent_r[1] = sintheta * (-1) * sinphi;
+    tangent_r[2] = cosphi;
+
+    // Normal vector is the the cross-product of the tangent vectors
+    normal[0] = tangent_R[1] * tangent_r[2] - tangent_R[2] * tangent_r[1];
+    normal[1] = tangent_R[2] * tangent_r[0] - tangent_R[0] * tangent_r[2];
+    normal[2] = tangent_R[0] * tangent_r[1] - tangent_R[1] * tangent_r[0];
+
+    // Normalize normal vector
+    length = sqrt(normal[0] * normal[0] + normal[1] * normal[1] + normal[2] * normal[2]);
+
+    normal[0] /= length;
+    normal[1] /= length;
+    normal[2] /= length;
+
+    return normal;
 }
